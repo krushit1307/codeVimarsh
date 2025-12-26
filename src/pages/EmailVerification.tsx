@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "http://localhost:5000/api";
+
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -39,7 +41,7 @@ const EmailVerification = () => {
           try {
             const pendingProfileRaw = localStorage.getItem('pendingProfile');
             const pendingProfile = pendingProfileRaw ? JSON.parse(pendingProfileRaw) : {};
-            await fetch('http://localhost:5000/api/auth/supabase-sync', {
+            await fetch(`${API_BASE_URL}/auth/supabase-sync`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

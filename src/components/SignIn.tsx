@@ -9,6 +9,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "http://localhost:5000/api";
+
 const SignIn = () => {
   const navigate = useNavigate();
   const { user } = useSupabaseAuth();
@@ -54,7 +56,7 @@ const SignIn = () => {
         const { data: sessionData } = await supabase.auth.getSession();
         const accessToken = sessionData.session?.access_token;
         if (accessToken) {
-          await fetch('http://localhost:5000/api/auth/supabase-sync', {
+          await fetch(`${API_BASE_URL}/auth/supabase-sync`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
