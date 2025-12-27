@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "http://localhost:5000/api";
+const APP_URL = (import.meta.env.VITE_APP_URL as string | undefined) || window.location.origin;
 
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
@@ -73,7 +74,7 @@ const EmailVerification = () => {
     }
 
     try {
-      const redirectTo = `${window.location.origin}/verify-email`;
+      const redirectTo = `${APP_URL}/verify-email`;
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: userEmail,

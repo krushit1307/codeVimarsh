@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabaseClient";
 
+const APP_URL = (import.meta.env.VITE_APP_URL as string | undefined) || window.location.origin;
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +22,7 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      const redirectTo = `${window.location.origin}/reset-password`;
+      const redirectTo = `${APP_URL}/reset-password`;
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
       });

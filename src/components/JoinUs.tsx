@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabaseClient";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 
+const APP_URL = (import.meta.env.VITE_APP_URL as string | undefined) || window.location.origin;
+
 const JoinUs = () => {
   const navigate = useNavigate();
   const { user } = useSupabaseAuth();
@@ -35,7 +37,7 @@ const JoinUs = () => {
     setIsLoading(true);
 
     try {
-      const redirectTo = `${window.location.origin}/verify-email`;
+      const redirectTo = `${APP_URL}/verify-email`;
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
