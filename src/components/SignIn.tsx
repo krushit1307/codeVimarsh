@@ -143,6 +143,15 @@ const SignIn = () => {
 
               {error && <p className="text-sm text-destructive">{error}</p>}
 
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
               <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
