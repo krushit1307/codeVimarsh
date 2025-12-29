@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Info, Calendar, Users, Mail, Menu, X, User, LogOut } from "lucide-react";
+import { Home, Info, Calendar, Users, Mail, Menu, X, User, LogOut, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
@@ -11,6 +11,7 @@ const navItems = [
   { label: "About", href: "/#about", icon: Info },
   { label: "Events", href: "/#events", icon: Calendar },
   { label: "Team", href: "/#team", icon: Users },
+  { label: "Resources", href: "/#resources", icon: BookOpen },
   { label: "Contact", href: "/#contact", icon: Mail },
 ];
 
@@ -41,7 +42,7 @@ const Navbar = () => {
       return;
     }
 
-    const ids = ["about", "events", "team", "contact"];
+    const ids = ["about", "events", "team", "resources", "contact"];
     if (location.hash && location.hash.startsWith("#")) {
       const hashId = location.hash.slice(1);
       if (ids.includes(hashId)) setActiveSection(hashId);
