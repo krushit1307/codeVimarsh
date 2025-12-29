@@ -16,16 +16,93 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { adminApi, type AdminEvent, type AdminRegistration, type AdminTeam, type AdminTeamMember } from "@/lib/adminApi";
+import { adminApi, type AdminEvent, type AdminRegistration, type AdminTeam, type AdminTeamMember, type AdminUserProfileResponse } from "@/lib/adminApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+const AdminUserProfileView = ({ data }: { data: AdminUserProfileResponse }) => {
+  const { user, profile } = data;
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-border bg-secondary/20 p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm text-muted-foreground">User</div>
+            <div className="text-base font-semibold">
+              {user.firstName} {user.lastName}
+            </div>
+            <div className="text-sm text-muted-foreground">{user.email}</div>
+          </div>
+          <div className="text-right">
+            {profile ? (
+              <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${profile.isProfileComplete ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>
+                {profile.isProfileComplete ? "Complete" : "Incomplete"}
+              </div>
+            ) : (
+              <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-muted text-muted-foreground">
+                No Profile
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {profile ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-lg border border-border p-4">
+            <div className="text-sm text-muted-foreground">Full Name</div>
+            <div className="font-medium">{profile.fullName}</div>
+          </div>
+          <div className="rounded-lg border border-border p-4">
+            <div className="text-sm text-muted-foreground">PRN Number</div>
+            <div className="font-medium">{profile.prnNumber}</div>
+          </div>
+          <div className="rounded-lg border border-border p-4">
+            <div className="text-sm text-muted-foreground">Class</div>
+            <div className="font-medium">{profile.class}</div>
+          </div>
+          <div className="rounded-lg border border-border p-4">
+            <div className="text-sm text-muted-foreground">Division</div>
+            <div className="font-medium">{profile.division}</div>
+          </div>
+          <div className="md:col-span-2 rounded-lg border border-border p-4">
+            <div className="text-sm text-muted-foreground">Bio</div>
+            <div className="text-sm whitespace-pre-wrap">{profile.bio || "-"}</div>
+          </div>
+          {profile.profileImage ? (
+            <div className="md:col-span-2 rounded-lg border border-border p-4">
+              <div className="text-sm text-muted-foreground mb-2">Profile Image</div>
+              <img src={profile.profileImage} alt="Profile" className="h-24 w-24 rounded-full object-cover border border-border" />
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="text-sm text-muted-foreground">This user has not created a profile yet.</div>
+      )}
+    </div>
+  );
+};
 
 const AdminDashboard = () => {
   const { toast } = useToast();
   const { admin, logout } = useAdminAuth();
+
   const qc = useQueryClient();
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [profileDialogEmail, setProfileDialogEmail] = useState<string | null>(null);
+
+  const {
+    data: selectedUserProfile,
+    isLoading: isUserProfileLoading,
+    error: userProfileError,
+  } = useQuery({
+    queryKey: ["admin", "userProfile", profileDialogEmail],
+    queryFn: () => adminApi.getUserProfileByEmail(profileDialogEmail as string),
+    enabled: Boolean(profileDialogEmail && profileDialogOpen),
+  });
 
   const { data: events } = useQuery({ queryKey: ["admin", "events"], queryFn: adminApi.listEvents });
   const {
@@ -556,6 +633,7 @@ const AdminDashboard = () => {
                           <TableHead>First Name</TableHead>
                           <TableHead>Last Name</TableHead>
                           <TableHead>Email</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -564,11 +642,53 @@ const AdminDashboard = () => {
                             <TableCell>{r.firstName}</TableCell>
                             <TableCell>{r.lastName}</TableCell>
                             <TableCell>{r.email}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="outline_orange"
+                                size="sm"
+                                onClick={() => {
+                                  setProfileDialogEmail(r.email);
+                                  setProfileDialogOpen(true);
+                                }}
+                              >
+                                View Profile
+                              </Button>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   )}
+
+                  <Dialog
+                    open={profileDialogOpen}
+                    onOpenChange={(open) => {
+                      setProfileDialogOpen(open);
+                      if (!open) setProfileDialogEmail(null);
+                    }}
+                  >
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>User Profile</DialogTitle>
+                      </DialogHeader>
+
+                      {isUserProfileLoading ? (
+                        <div className="text-sm text-muted-foreground">Loading profile...</div>
+                      ) : userProfileError ? (
+                        <div className="text-sm text-destructive">Failed to load profile: {(userProfileError as any)?.message || "Unknown error"}</div>
+                      ) : !selectedUserProfile ? (
+                        <div className="text-sm text-muted-foreground">Select a user to view profile.</div>
+                      ) : (
+                        <AdminUserProfileView data={selectedUserProfile} />
+                      )}
+
+                      <DialogFooter>
+                        <Button variant="outline_orange" onClick={() => setProfileDialogOpen(false)}>
+                          Close
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardContent>
               </Card>
             </TabsContent>

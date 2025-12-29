@@ -8,6 +8,8 @@ const Event = require('../models/Event');
 const EventRegistration = require('../models/EventRegistration');
 const Team = require('../models/Team');
 const TeamMember = require('../models/TeamMember');
+const User = require('../models/User');
+const UserProfile = require('../models/UserProfile');
 const { DEFAULT_EVENT_SLUGS } = require('../services/eventSeeder');
 
 const router = express.Router();
@@ -263,6 +265,40 @@ router.get('/events/:eventId/registrations', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error while fetching registrations',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+});
+
+// @route   GET /api/admin/users/profile?email=...
+// @desc    Admin: fetch full user profile data (User + UserProfile)
+// @access  Private (Admin)
+router.get('/users/profile', async (req, res) => {
+  try {
+    const email = String(req.query?.email || '').toLowerCase().trim();
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email }).lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const profile = await UserProfile.findOne({ user: user._id }).lean();
+
+    return res.json({
+      success: true,
+      data: {
+        user,
+        profile,
+      },
+    });
+  } catch (error) {
+    console.error('Admin get user profile error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching user profile',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }

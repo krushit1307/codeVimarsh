@@ -9,6 +9,7 @@ const eventsRoutes = require('./routes/events');
 const adminAuthRoutes = require('./routes/adminAuth');
 const adminRoutes = require('./routes/admin');
 const teamsRoutes = require('./routes/teams');
+const profileRoutes = require('./routes/profile');
 const { ensureDefaultEvents } = require('./services/eventSeeder');
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

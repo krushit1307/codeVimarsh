@@ -79,6 +79,38 @@ export type AdminRegistration = {
   registeredAt: string;
 };
 
+export type AdminUser = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar?: string | null;
+  role?: string;
+  isActive?: boolean;
+  emailVerified?: boolean;
+  lastLogin?: string | null;
+  createdAt?: string;
+};
+
+export type AdminUserProfile = {
+  _id: string;
+  user: string;
+  fullName: string;
+  profileImage?: string | null;
+  prnNumber: string;
+  class: string;
+  division: "GIA" | "SFI";
+  bio?: string;
+  isProfileComplete: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type AdminUserProfileResponse = {
+  user: AdminUser;
+  profile: AdminUserProfile | null;
+};
+
 export type CloudinarySignatureResponse = {
   timestamp: number;
   signature: string;
@@ -166,6 +198,12 @@ export const adminApi = {
   },
   listRegistrationsByEvent: async (eventId: string) => {
     const res = await request<{ success: boolean; data: AdminRegistration[] }>(`/admin/events/${eventId}/registrations`);
+    return res.data;
+  },
+
+  getUserProfileByEmail: async (email: string) => {
+    const params = new URLSearchParams({ email });
+    const res = await request<{ success: boolean; data: AdminUserProfileResponse }>(`/admin/users/profile?${params.toString()}`);
     return res.data;
   },
 };

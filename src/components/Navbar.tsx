@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Info, Calendar, Users, Mail, Menu, X, User, LogOut, BookOpen } from "lucide-react";
+import { Home, Info, Calendar, Users, Mail, Menu, X, User, LogOut, BookOpen, UserCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
@@ -181,8 +181,26 @@ const Navbar = () => {
                       <p className="text-sm font-medium">
                         {user.user_metadata?.firstName || user.user_metadata?.first_name || "User"}
                       </p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                      <button
+                        onClick={() => {
+                          window.open('/profile', '_blank');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors underline cursor-pointer flex items-center gap-1"
+                        title="Open profile in new window"
+                      >
+                        {user.email}
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
                     </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm hover:bg-secondary/50 transition-colors"
+                    >
+                      <UserCircle className="w-4 h-4 mr-2 inline" />
+                      Profile
+                    </Link>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -277,14 +295,36 @@ const Navbar = () => {
               <span>Admin</span>
             </Link>
           )}
+          {user && (
+            <button
+              onClick={() => {
+                window.open('/profile', '_blank');
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            >
+              <UserCircle className="w-5 h-5" />
+              <span>Profile (New Window)</span>
+            </button>
+          )}
           <div className="flex gap-3 mt-4 pt-4 border-t border-border">
             {user ? (
               <>
                 <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg">
                   <User className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    {user.user_metadata?.firstName || user.user_metadata?.first_name || "User"}
-                  </span>
+                  <div className="flex-1">
+                    <span className="text-sm font-medium block">
+                      {user.user_metadata?.firstName || user.user_metadata?.first_name || "User"}
+                    </span>
+                    <button
+                      onClick={() => window.open('/profile', '_blank')}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors underline cursor-pointer flex items-center gap-1"
+                      title="Open profile in new window"
+                    >
+                      {user.email}
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
                 <Button
                   variant="outline_orange"

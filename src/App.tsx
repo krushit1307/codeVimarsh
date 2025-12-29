@@ -16,6 +16,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import ProfileManagement from "./components/ProfileManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/verify-email" element={<EmailVerification />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/profile" element={<ProfileManagement />} />
               <Route path="/admin/login" element={<Navigate to="/sign-in" replace />} />
               <Route
                 path="/admin"
