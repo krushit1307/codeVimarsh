@@ -75,15 +75,17 @@ router.post('/', supabaseAuthMiddleware, async (req, res) => {
     let profile = await UserProfile.findOne({ user: req.user._id });
     
     if (profile) {
+      const previousProfileImage = profile.profileImage;
+      const previousCloudinaryPublicId = profile.cloudinaryPublicId;
       // Update existing profile
       Object.assign(profile, validatedData);
       
       // Handle profile image changes
-      if (validatedData.profileImage && validatedData.profileImage !== profile.profileImage) {
+      if (validatedData.profileImage && validatedData.profileImage !== previousProfileImage) {
         // If old image was from Cloudinary, delete it
-        if (profile.cloudinaryPublicId) {
+        if (previousCloudinaryPublicId) {
           try {
-            await cloudinary.uploader.destroy(profile.cloudinaryPublicId);
+            await cloudinary.uploader.destroy(previousCloudinaryPublicId);
           } catch (error) {
             console.error('Error deleting old Cloudinary image:', error);
           }

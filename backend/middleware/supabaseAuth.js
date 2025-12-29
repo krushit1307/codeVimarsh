@@ -32,25 +32,53 @@ const supabaseAuthMiddleware = async (req, res, next) => {
 
     // Get or create user in our database
     const User = require('../models/User');
-    let user = await User.findOne({ supabaseId: data.user.id });
+    const supaUser = data.user;
 
-    if (!user) {
-      // Create user if doesn't exist
-      const userData = {
-        authProvider: 'supabase',
-        supabaseId: data.user.id,
-        email: data.user.email,
-        firstName: data.user.user_metadata?.firstName || data.user.user_metadata?.first_name || '',
-        lastName: data.user.user_metadata?.lastName || data.user.user_metadata?.last_name || '',
-        emailVerified: !!data.user.email_confirmed_at,
-        isTempUser: false,
-        isActive: true
-      };
-
-      user = new User(userData);
-      await user.save();
+    const email = String(supaUser.email || '').toLowerCase().trim();
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Supabase user has no email'
+      });
     }
 
+    const meta = supaUser.user_metadata || {};
+    const rawFirstName = String(meta.firstName || meta.first_name || meta.given_name || '').trim();
+    const rawLastName = String(meta.lastName || meta.last_name || meta.family_name || '').trim();
+
+    const emailLocalPart = email.split('@')[0] || 'User';
+    const safeFirstName = rawFirstName || emailLocalPart || 'User';
+    const safeLastName = rawLastName || 'User';
+
+    let user = await User.findOne({ supabaseId: supaUser.id });
+    if (!user) {
+      // If user existed from older auth flow, link supabaseId by email
+      user = await User.findOne({ email });
+    }
+
+    if (!user) {
+      user = new User({
+        authProvider: 'supabase',
+        supabaseId: supaUser.id,
+        email,
+        firstName: safeFirstName,
+        lastName: safeLastName,
+        emailVerified: !!supaUser.email_confirmed_at,
+        isTempUser: false,
+        isActive: true
+      });
+    } else {
+      user.authProvider = 'supabase';
+      user.supabaseId = supaUser.id;
+      user.email = email;
+      if (!String(user.firstName || '').trim()) user.firstName = safeFirstName;
+      if (!String(user.lastName || '').trim()) user.lastName = safeLastName;
+      user.emailVerified = !!supaUser.email_confirmed_at;
+      user.isTempUser = false;
+      user.isActive = true;
+    }
+
+    await user.save();
     req.user = user;
     next();
   } catch (error) {
