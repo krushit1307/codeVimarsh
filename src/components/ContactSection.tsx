@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mail, MapPin, Send } from "lucide-react";
+import emailjs from "@emailjs/browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,12 +37,14 @@ const ContactSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY as string | undefined;
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined;
 
-    if (!accessKey) {
+    if (!serviceId || !templateId || !publicKey) {
       toast({
-        title: "Missing Web3Forms key",
-        description: "Set VITE_WEB3FORMS_ACCESS_KEY in your frontend .env and restart the dev server.",
+        title: "Missing EmailJS configuration",
+        description: "Set VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY in your frontend .env and redeploy.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -49,28 +52,19 @@ const ContactSection = () => {
     }
 
     try {
-      const res = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: accessKey,
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
           name,
           email,
-          replyto: email,
           subject,
           message,
-          from_name: "Code Vimarsh Website",
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.message || "Failed to send message.");
-      }
+        },
+        {
+          publicKey,
+        }
+      );
 
       toast({
         title: "Message Sent!",
