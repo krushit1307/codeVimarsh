@@ -1,7 +1,7 @@
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { supabase } from './supabaseClient';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:5000/api';
 
 export interface UserProfile {
   _id: string;
