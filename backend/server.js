@@ -80,6 +80,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+
+// Lightweight health check endpoint to prevent cold starts
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
